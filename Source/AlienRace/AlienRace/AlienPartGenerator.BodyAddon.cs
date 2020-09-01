@@ -17,8 +17,6 @@ namespace AlienRace
         {
             public string path;
             public string bodyPart;
-            [Obsolete("Replaced by color channels")]
-            public bool useSkinColor = true;
             public BodyAddonOffsets offsets;
             public bool linkVariantIndexWithPrevious = false;
             public float angle = 0f;
@@ -34,7 +32,7 @@ namespace AlienRace
             private string colorChannel;
 
             public string ColorChannel => 
-                this.colorChannel = this.colorChannel ?? (this.useSkinColor ? "skin" : "hair");
+                this.colorChannel = this.colorChannel ?? "skin";
 
             public int variantCount = 0;
             public bool debug = true;
@@ -46,6 +44,7 @@ namespace AlienRace
             public List<string> hiddenUnderApparelTag = new List<string>();
 
             public string backstoryRequirement;
+            public string bodyTypeRequirement;
 
             private ShaderTypeDef shaderType;
 
@@ -64,8 +63,8 @@ namespace AlienRace
                     (this.backstoryRequirement.NullOrEmpty() || pawn.story.AllBackstories.Any(predicate: b=> b.identifier == this.backstoryRequirement)) &&   
                     (this.bodyPart.NullOrEmpty() || 
                      (pawn.health.hediffSet.GetNotMissingParts().Any(predicate: bpr => bpr.untranslatedCustomLabel == this.bodyPart || bpr.def.defName == this.bodyPart)) || 
-                     (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart.defName) ?? false)) &&
-               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale );
+                     (this.hediffGraphics?.Any(bahg => bahg.hediff == HediffDefOf.MissingBodyPart) ?? false)) &&
+               (pawn.gender == Gender.Female ? this.drawForFemale : this.drawForMale) && (this.bodyTypeRequirement.NullOrEmpty() || pawn.story.bodyType.ToString() == this.bodyTypeRequirement);
 
             public virtual Graphic GetPath(Pawn pawn, ref int sharedIndex, int? savedIndex = new int?())
             {
@@ -88,7 +87,7 @@ namespace AlienRace
                                 foreach (BodyAddonHediffGraphic bahg in this.hediffGraphics)
                                 {
 
-                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(h => h.def.defName == bahg.hediff &&
+                                    foreach (Hediff h in pawn.health.hediffSet.hediffs.Where(h => h.def == bahg.hediff &&
                                                                                                   (h.Part == null                                  ||
                                                                                                    this.bodyPart.NullOrEmpty()                     ||
                                                                                                    h.Part.untranslatedCustomLabel == this.bodyPart ||
@@ -131,22 +130,24 @@ namespace AlienRace
                 ExposableValueTuple<Color, Color> channel = pawn.GetComp<AlienComp>().GetChannel(this.ColorChannel);
                 int tv;
 
+                //Log.Message($"{pawn.Name.ToStringFull}\n{channel.first.ToString()} | {pawn.story.hairColor}");
+
                 return !returnPath.NullOrEmpty() ?
-                            GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
-                                    (this.linkVariantIndexWithPrevious ?
-                                        sharedIndex % variantCounting :
-                                        (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
-                                shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
-                                    drawSize: this.drawSize * 1.5f,
-                                color: channel.first, channel.second) :
-                            null;
+                           GraphicDatabase.Get<Graphic_Multi>(path: returnPath = (returnPath + ((tv = (savedIndex.HasValue ? (sharedIndex = savedIndex.Value % variantCounting) :
+                                                                                                           (this.linkVariantIndexWithPrevious ?
+                                                                                                                sharedIndex % variantCounting :
+                                                                                                                (sharedIndex = Rand.Range(min: 0, max: variantCounting))))) == 0 ? "" : tv.ToString())),
+                                                              shader: ContentFinder<Texture2D>.Get(itemPath: returnPath + "_northm", reportFailure: false) == null ? this.ShaderType.Shader : ShaderDatabase.CutoutComplex, //ShaderDatabase.Transparent,
+                                                              drawSize: this.drawSize * 1.5f,
+                                                              color: channel.first, channel.second) :
+                           null;
             }
         }
 
 
         public class BodyAddonHediffGraphic
         {
-            public string hediff;
+            public HediffDef hediff;
             public string path;
             public int variantCount = 0;
             public List<BodyAddonHediffSeverityGraphic> severity;
@@ -154,7 +155,10 @@ namespace AlienRace
             [UsedImplicitly]
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
-                this.hediff = xmlRoot.Name;
+                XmlAttribute mayRequire = xmlRoot.Attributes["MayRequire"];
+                int index = mayRequire != null ? xmlRoot.Name.LastIndexOf('\"') + 1 : 0;
+                DirectXmlCrossRefLoader.RegisterObjectWantsCrossRef(this, nameof(this.hediff),  xmlRoot.Name.Substring(index, xmlRoot.Name.Length - index), mayRequire?.Value.ToLower());
+
                 this.path = xmlRoot.FirstChild.Value?.Trim();
 
                 Traverse traverse = Traverse.Create(root: this);
@@ -193,6 +197,7 @@ namespace AlienRace
             public void LoadDataFromXmlCustom(XmlNode xmlRoot)
             {
                 this.backstory = xmlRoot.Name;
+
                 this.path = xmlRoot.FirstChild.Value;
             }
         }

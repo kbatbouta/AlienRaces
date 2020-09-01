@@ -10,9 +10,7 @@
     using System.Runtime.CompilerServices;
     using HarmonyLib;
     using RimWorld;
-    using RimWorld.BaseGen;
     using UnityEngine;
-    using UnityEngine.Experimental.PlayerLoop;
     using Verse;
     using Verse.AI;
     using Verse.Grammar;
@@ -80,9 +78,9 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(Pawn), name: nameof(Pawn.SetFaction)), prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Thing), name: nameof(Pawn.SetFactionDirect)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SetFactionDirectPostfix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain)), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_OptimizeApparel), name: nameof(JobGiver_OptimizeApparel.ApparelScoreGain_NewTmp)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(ApparelScoreGainPostFix)));
-            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought)), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtUtility), name: nameof(ThoughtUtility.CanGetThought_NewTemp)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanGetThoughtPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(Corpse), name: nameof(Corpse.ButcherProducts)), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ButcherProductsPrefix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(FoodUtility), name: nameof(FoodUtility.ThoughtsFromIngesting)), prefix: null,
@@ -104,10 +102,10 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(MemoryThoughtHandler), name: nameof(MemoryThoughtHandler.GetFirstMemoryOfDef)),
                           prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(ThoughtReplacementPrefix)));
 
-            harmony.Patch(original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
+            harmony.Patch(original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssembly("AgeInjuryUtility"), name: "GenerateRandomOldAgeInjuries"),
                 prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomOldAgeInjuriesPrefix)));
             harmony.Patch(
-                original: AccessTools.Method(type: AccessTools.TypeByName(name: "AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] { typeof(ThingDef), typeof(int) }),
+                original: AccessTools.Method(type: GenTypes.GetTypeInAnyAssembly("AgeInjuryUtility"), name: "RandomHediffsToGainOnBirthday", parameters: new[] { typeof(ThingDef), typeof(int) }),
                 prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(RandomHediffsToGainOnBirthdayPostfix)));
             //            harmony.Patch(original: AccessTools.Property(type: typeof(JobDriver), name: nameof(JobDriver.Posture)).GetGetMethod(nonPublic: false), prefix: null,
             //                postfix: new HarmonyMethod(type: patchType, name: nameof(PosturePostfix)));
@@ -116,8 +114,8 @@
                             
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateRandomAge"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateRandomAgePrefix)));
             
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), prefix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsPrefix)),
-                          postfix: null, transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsTranspiler)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateTraits"), postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsPostfix)),
+                          transpiler: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateTraitsTranspiler)));
             harmony.Patch(original: AccessTools.Method(type: typeof(JobGiver_SatisfyChemicalNeed), name: "DrugValidator"), prefix: null,
                           postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(DrugValidatorPostfix)));
             harmony.Patch(original: AccessTools.Method(type: typeof(CompDrug), name: nameof(CompDrug.PostIngested)), prefix: null,
@@ -125,7 +123,7 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(AddictionUtility), name: nameof(AddictionUtility.CanBingeOnNow)), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(CanBingeNowPostfix)));
                 
-            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType"), prefix: null,
+            harmony.Patch(original: AccessTools.Method(type: typeof(PawnGenerator), name: "GenerateBodyType_NewTemp"), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenerateBodyTypePostfix)));
             harmony.Patch(original: AccessTools.Property(type: typeof(Pawn_StoryTracker), name: nameof(Pawn_StoryTracker.SkinColor)).GetGetMethod(), prefix: null,
                 postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(SkinColorPostfix)));
@@ -213,193 +211,193 @@
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Woman), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
             harmony.Patch(original: AccessTools.Method(type: typeof(ThoughtWorker_Man), name: "CurrentSocialStateInternal"), transpiler: misandryMisogonyTranspiler);
 
-            harmony.Patch(original: AccessTools.Method(type: typeof(EquipmentUtility), name: nameof(EquipmentUtility.CanEquip), parameters: new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType()}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
+            harmony.Patch(original: AccessTools.Method(type: typeof(EquipmentUtility), name: nameof(EquipmentUtility.CanEquip_NewTmp), parameters: new []{typeof(Thing), typeof(Pawn), typeof(string).MakeByRefType(), typeof(bool)}), postfix: new HarmonyMethod(patchType, nameof(CanEquipPostfix)));
 
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "GiveShuffledBioTo"), transpiler: 
                           new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
             harmony.Patch(original: AccessTools.Method(type: typeof(PawnBioAndNameGenerator), name: "TryGiveSolidBioTo"), transpiler:
                           new HarmonyMethod(methodType: patchType, methodName: nameof(MinAgeForAdulthood)));
+            harmony.Patch(AccessTools.Method(typeof(PawnGenerator), "TryGenerateNewPawnInternal"), transpiler: new HarmonyMethod(patchType, nameof(TryGenerateNewPawnTranspiler)));
 
-            DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.ForEach(action: ar =>
-                                                                                  {
-                                                                                      foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts.Select(selector: DefDatabase<ThoughtDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(key: thoughtDef))
-                                                                                              ThoughtSettings.thoughtRestrictionDict.Add(key: thoughtDef, value: new List<ThingDef_AlienRace>());
-                                                                                          ThoughtSettings.thoughtRestrictionDict[key: thoughtDef].Add(item: ar);
-                                                                                      }
+            foreach (ThingDef_AlienRace ar in DefDatabase<ThingDef_AlienRace>.AllDefsListForReading)
+            {
+                foreach (ThoughtDef thoughtDef in ar.alienRace.thoughtSettings.restrictedThoughts)
+                {
+                    if (!ThoughtSettings.thoughtRestrictionDict.ContainsKey(key: thoughtDef))
+                        ThoughtSettings.thoughtRestrictionDict.Add(key: thoughtDef, value: new List<ThingDef_AlienRace>());
+                    ThoughtSettings.thoughtRestrictionDict[key: thoughtDef].Add(item: ar);
+                }
 
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.apparelRestrictionDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.apparelRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.apparelRestrictionDict[key: thingDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.apparelList)
+                {
+                    if (!RaceRestrictionSettings.apparelRestrictionDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.apparelRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.apparelRestrictionDict[key: thingDef].Add(item: ar);
+                }
 
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteApparelList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.apparelWhiteDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.apparelWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.apparelWhiteDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.weaponRestrictionDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.weaponRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.weaponRestrictionDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteWeaponList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.weaponWhiteDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.weaponWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.weaponWhiteDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.buildingRestrictionDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.buildingRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.buildingRestrictionDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteBuildingList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.buildingWhiteDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.buildingWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.buildingWhiteDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: rp => rp != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.recipeRestrictionDict.ContainsKey(key: recipeDef))
-                                                                                              RaceRestrictionSettings.recipeRestrictionDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.recipeRestrictionDict[key: recipeDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList.Select(selector: DefDatabase<RecipeDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.recipeWhiteDict.ContainsKey(key: recipeDef))
-                                                                                              RaceRestrictionSettings.recipeWhiteDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.recipeWhiteDict[key: recipeDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteApparelList)
+                {
+                    if (!RaceRestrictionSettings.apparelWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.apparelWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.apparelWhiteDict[key: thingDef].Add(item: ar);
+                }
 
 
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.plantRestrictionDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.plantRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.plantRestrictionDict[key: thingDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.weaponList)
+                {
+                    if (!RaceRestrictionSettings.weaponRestrictionDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.weaponRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.weaponRestrictionDict[key: thingDef].Add(item: ar);
+                }
 
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePlantList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.plantWhiteDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.plantWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.plantWhiteDict[key: thingDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteWeaponList)
+                {
+                    if (!RaceRestrictionSettings.weaponWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.weaponWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.weaponWhiteDict[key: thingDef].Add(item: ar);
+                }
 
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.buildingList)
+                {
+                    if (!RaceRestrictionSettings.buildingRestrictionDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.buildingRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.buildingRestrictionDict[key: thingDef].Add(item: ar);
+                }
 
-                                                                                      foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.traitRestrictionDict.ContainsKey(key: traitDef))
-                                                                                              RaceRestrictionSettings.traitRestrictionDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.traitRestrictionDict[key: traitDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteBuildingList)
+                {
+                    if (!RaceRestrictionSettings.buildingWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.buildingWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.buildingWhiteDict[key: thingDef].Add(item: ar);
+                }
 
-                                                                                      foreach (TraitDef traitDef in ar.alienRace.raceRestriction.whiteTraitList.Select(selector: DefDatabase<TraitDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.traitWhiteDict.ContainsKey(key: traitDef))
-                                                                                              RaceRestrictionSettings.traitWhiteDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.traitWhiteDict[key: traitDef].Add(item: ar);
-                                                                                      }
+                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.recipeList)
+                {
+                    if (!RaceRestrictionSettings.recipeRestrictionDict.ContainsKey(key: recipeDef))
+                        RaceRestrictionSettings.recipeRestrictionDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.recipeRestrictionDict[key: recipeDef].Add(item: ar);
+                }
 
-
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.foodRestrictionDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.foodRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.foodRestrictionDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteFoodList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.foodWhiteDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.foodWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.foodWhiteDict[key: thingDef].Add(item: ar);
-                                                                                      }
+                foreach (RecipeDef recipeDef in ar.alienRace.raceRestriction.whiteRecipeList)
+                {
+                    if (!RaceRestrictionSettings.recipeWhiteDict.ContainsKey(key: recipeDef))
+                        RaceRestrictionSettings.recipeWhiteDict.Add(key: recipeDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.recipeWhiteDict[key: recipeDef].Add(item: ar);
+                }
 
 
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.tameRestrictionDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.tameRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.tameRestrictionDict[key: thingDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.plantList)
+                {
+                    if (!RaceRestrictionSettings.plantRestrictionDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.plantRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.plantRestrictionDict[key: thingDef].Add(item: ar);
+                }
 
-                                                                                      foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePetList.Select(selector: DefDatabase<ThingDef>.GetNamedSilentFail).Where(predicate: td => td != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.tameWhiteDict.ContainsKey(key: thingDef))
-                                                                                              RaceRestrictionSettings.tameWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.tameWhiteDict[key: thingDef].Add(item: ar);
-                                                                                      }
-
-                                                                                      foreach (ResearchProjectDef projectDef in ar.alienRace.raceRestriction.researchList.Select(selector: rl => rl?.projects).SelectMany(pr => pr?.Select(pn => pn.NullOrEmpty() ? null : DefDatabase<ResearchProjectDef>.GetNamedSilentFail(pn)) ?? new List<ResearchProjectDef>()).Where(rpd => rpd != null))
-                                                                                      {
-                                                                                          if (!RaceRestrictionSettings.researchRestrictionDict.ContainsKey(key: projectDef))
-                                                                                              RaceRestrictionSettings.researchRestrictionDict.Add(key: projectDef, value: new List<ThingDef_AlienRace>());
-                                                                                          RaceRestrictionSettings.researchRestrictionDict[key: projectDef].Add(item: ar);
-                                                                                      }
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePlantList)
+                {
+                    if (!RaceRestrictionSettings.plantWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.plantWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.plantWhiteDict[key: thingDef].Add(item: ar);
+                }
 
 
-                                                                                      ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
-                                                                                      ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> { AlienDefOf.alienCorpseCategory };
-                                                                                      AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
-                                                                                      ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+                foreach (TraitDef traitDef in ar.alienRace.raceRestriction.traitList)
+                {
+                    if (!RaceRestrictionSettings.traitRestrictionDict.ContainsKey(key: traitDef))
+                        RaceRestrictionSettings.traitRestrictionDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.traitRestrictionDict[key: traitDef].Add(item: ar);
+                }
 
-                                                                                      if (ar.alienRace.generalSettings.humanRecipeImport && ar != ThingDefOf.Human)
-                                                                                      {
-                                                                                          (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection: ThingDefOf.Human.recipes.Where(predicate: rd =>
-                                                                                                                                                                                                                  !rd.targetsBodyPart || rd.appliedOnFixedBodyParts.NullOrEmpty() ||
-                                                                                                                                                                                                                  rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
+                foreach (TraitDef traitDef in ar.alienRace.raceRestriction.whiteTraitList)
+                {
+                    if (!RaceRestrictionSettings.traitWhiteDict.ContainsKey(key: traitDef))
+                        RaceRestrictionSettings.traitWhiteDict.Add(key: traitDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.traitWhiteDict[key: traitDef].Add(item: ar);
+                }
 
-                                                                                          DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
-                                                                                                                                                       {
-                                                                                                                                                           if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
-                                                                                                                                                               rd.recipeUsers.Add(item: ar);
-                                                                                                                                                           if (!rd.defaultIngredientFilter?.Allows(def: ThingDefOf.Meat_Human) ?? false)
-                                                                                                                                                               rd.defaultIngredientFilter.SetAllow(thingDef: ar.race.meatDef, allow: false);
-                                                                                                                                                       });
-                                                                                          ar.recipes.RemoveDuplicates();
-                                                                                      }
 
-                                                                                      ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
-                                                                                                                                                   {
-                                                                                                                                                       WorkGiverDef wg = DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd);
-                                                                                                                                                       if (wg == null)
-                                                                                                                                                           return;
-                                                                                                                                                       harmony.Patch(original: AccessTools.Method(type: wg.giverClass, name: "JobOnThing"), prefix: null,
-                                                                                                                                                                     postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericJobOnThingPostfix)));
-                                                                                                                                                       MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wg.giverClass, name: "HasJobOnThing");
-                                                                                                                                                       if (hasJobOnThingInfo != null)
-                                                                                                                                                           harmony.Patch(original: hasJobOnThingInfo, prefix: null, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericHasJobOnThingPostfix)));
-                                                                                                                                                   });
-                                                                                  });
-            
-            
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.foodList)
+                {
+                    if (!RaceRestrictionSettings.foodRestrictionDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.foodRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.foodRestrictionDict[key: thingDef].Add(item: ar);
+                }
+
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whiteFoodList)
+                {
+                    if (!RaceRestrictionSettings.foodWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.foodWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.foodWhiteDict[key: thingDef].Add(item: ar);
+                }
+
+
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.petList)
+                {
+                    if (!RaceRestrictionSettings.tameRestrictionDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.tameRestrictionDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.tameRestrictionDict[key: thingDef].Add(item: ar);
+                }
+
+                foreach (ThingDef thingDef in ar.alienRace.raceRestriction.whitePetList)
+                {
+                    if (!RaceRestrictionSettings.tameWhiteDict.ContainsKey(key: thingDef))
+                        RaceRestrictionSettings.tameWhiteDict.Add(key: thingDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.tameWhiteDict[key: thingDef].Add(item: ar);
+                }
+
+                foreach (ResearchProjectDef projectDef in ar.alienRace.raceRestriction.researchList.SelectMany(selector: rl => rl?.projects))
+                {
+                    if (!RaceRestrictionSettings.researchRestrictionDict.ContainsKey(key: projectDef))
+                        RaceRestrictionSettings.researchRestrictionDict.Add(key: projectDef, value: new List<ThingDef_AlienRace>());
+                    RaceRestrictionSettings.researchRestrictionDict[key: projectDef].Add(item: ar);
+                }
+
+
+                ThingCategoryDefOf.CorpsesHumanlike.childThingDefs.Remove(item: ar.race.corpseDef);
+                ar.race.corpseDef.thingCategories = new List<ThingCategoryDef> {AlienDefOf.alienCorpseCategory};
+                AlienDefOf.alienCorpseCategory.childThingDefs.Add(item: ar.race.corpseDef);
+                ar.alienRace.generalSettings.alienPartGenerator.GenerateMeshsAndMeshPools();
+
+                if (ar.alienRace.generalSettings.humanRecipeImport && ar != ThingDefOf.Human)
+                {
+                    (ar.recipes ?? (ar.recipes = new List<RecipeDef>())).AddRange(collection:
+                        ThingDefOf.Human.recipes.Where(predicate: rd => !rd.targetsBodyPart ||
+                                                        rd.appliedOnFixedBodyParts.NullOrEmpty() ||
+                                                        rd.appliedOnFixedBodyParts.Any(predicate: bpd => ar.race.body.AllParts.Any(predicate: bpr => bpr.def == bpd))));
+
+                    DefDatabase<RecipeDef>.AllDefsListForReading.ForEach(action: rd =>
+                                                                                 {
+                                                                                     if (rd.recipeUsers?.Contains(item: ThingDefOf.Human) ?? false)
+                                                                                         rd.recipeUsers.Add(item: ar);
+                                                                                     if (!rd.defaultIngredientFilter?.Allows(def: ThingDefOf.Meat_Human) ?? false)
+                                                                                         rd.defaultIngredientFilter.SetAllow(thingDef: ar.race.meatDef, allow: false);
+                                                                                 });
+                    ar.recipes.RemoveDuplicates();
+                }
+
+                ar.alienRace.raceRestriction?.workGiverList?.ForEach(action: wgd =>
+                                                                             {
+                                                                                 if (wgd == null)
+                                                                                     return;
+                                                                                 harmony.Patch(original: AccessTools.Method(type: wgd.giverClass, name: "JobOnThing"),
+                                                                                               postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericJobOnThingPostfix)));
+                                                                                 MethodInfo hasJobOnThingInfo = AccessTools.Method(type: wgd.giverClass, name: "HasJobOnThing");
+                                                                                 if (hasJobOnThingInfo?.IsDeclaredMember() ?? false)
+                                                                                     harmony.Patch(original: hasJobOnThingInfo, postfix: new HarmonyMethod(methodType: patchType, methodName: nameof(GenericHasJobOnThingPostfix)));
+                                                                             });
+            }
+
             {
                 FieldInfo bodyInfo = AccessTools.Field(type: typeof(RaceProperties), name: nameof(RaceProperties.body));
                 MethodInfo bodyCheck = AccessTools.Method(type: patchType, name: nameof(ReplacedBody));
                 HarmonyMethod bodyTranspiler = new HarmonyMethod(methodType: patchType, methodName: nameof(BodyReferenceTranspiler));
 
+
                 //Full assemblies scan
                 foreach (MethodInfo mi in typeof(LogEntry).Assembly.GetTypes().
                     //SelectMany(t => t.GetNestedTypes(AccessTools.all).Concat(t)).
                     Where(predicate: t => (!t.IsAbstract || t.IsSealed) && !typeof(Delegate).IsAssignableFrom(c: t) && !t.IsGenericType && !t.HasAttribute<CompilerGeneratedAttribute>()).SelectMany(selector: t =>
-                       t.GetMethods(bindingAttr: AccessTools.all).Concat(second: t.GetProperties(bindingAttr: AccessTools.all).SelectMany(selector: pi => 
-                            new List<MethodInfo> { pi.GetGetMethod(nonPublic: true), pi.GetGetMethod(nonPublic: false), pi.GetSetMethod(nonPublic: true), pi.GetSetMethod(nonPublic: false) }))
+                       t.GetMethods(bindingAttr: AccessTools.all).Concat(second: t.GetProperties(bindingAttr: AccessTools.all).SelectMany(selector: pi => pi.GetAccessors(true)))
                         .Where(predicate: mi => mi != null && !mi.IsAbstract && mi.DeclaringType == t && !mi.IsGenericMethod && !mi.HasAttribute<System.Runtime.InteropServices.DllImportAttribute>()))// && mi.GetMethodBody()?.GetILAsByteArray()?.Length > 1))
                 ) //.Select(mi => mi.IsGenericMethod ? mi.MakeGenericMethod(mi.GetGenericArguments()) : mi))
                 {
@@ -407,7 +405,6 @@
                     if (mi != bodyCheck && instructions.Any(il => il.Value?.Equals(bodyInfo) ?? false))
                         harmony.Patch(original: mi, prefix: null, postfix: null, transpiler: bodyTranspiler);
                 }
-
 
                 //PawnRenderer Posture scan
                 MethodInfo postureInfo = AccessTools.Method(type: typeof(PawnUtility), name: nameof(PawnUtility.GetPosture));
@@ -430,6 +427,25 @@
                 BackstoryDef.UpdateTranslateableFields(bs: bd);
 
             AlienRaceMod.settings.UpdateSettings();
+        }
+
+        public static IEnumerable<CodeInstruction> TryGenerateNewPawnTranspiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> instructionList = instructions.ToList();
+            MethodInfo newbornInfo = AccessTools.PropertyGetter(typeof(PawnGenerationRequest), nameof(PawnGenerationRequest.Newborn));
+
+            bool done = false;
+
+            for (int i = 0; i < instructionList.Count; i++)
+            {
+                CodeInstruction instruction = instructionList[i];
+                if (!done && instructionList[i + 1].OperandIs(newbornInfo))
+                {
+                    done = true;
+                    i += 8;
+                } else 
+                    yield return instruction;
+            }
         }
 
         public static void ThoughtReplacementPrefix(MemoryThoughtHandler __instance, ref ThoughtDef def)
@@ -759,9 +775,9 @@
             FactionDef player = Faction.OfPlayerSilentFail?.def ?? Find.GameInitData.playerFaction.def;
             return !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: ar =>
                        f.def?.basicMemberKind?.race == ar &&
-                       (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(item: player.defName) ?? false) ?? false) ||
+                       (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(item: player) ?? false) ?? false) ||
                        player.basicMemberKind?.race == ar &&
-                       (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(item: f.def.defName) ?? false) ?? false));
+                       (ar?.alienRace.generalSettings?.factionRelations?.Any(predicate: frs => frs.factions?.Contains(item: f.def) ?? false) ?? false));
         }
 
         public static void EnsureRequiredEnemiesPostfix(ref bool __result, Faction f) => __result = __result ||
@@ -870,8 +886,21 @@
                     instruction.operand = validatorInfo;
                 }
 
+                if (instruction.opcode == OpCodes.Stloc_1)
+                {
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(patchType, nameof(AdditionalInitialTraits)));
+                }
+
                 yield return instruction;
             }
+        }
+
+        public static int AdditionalInitialTraits(int count, Pawn pawn)
+        {
+            if (!(pawn.def is ThingDef_AlienRace alienProps)) return count;
+
+            return count + alienProps.alienRace.generalSettings.additionalTraits.RandomInRange;
         }
 
         public static IEnumerable<TraitDef> GenerateTraitsValidator(Pawn p) => DefDatabase<TraitDef>.AllDefs.Where(predicate: tr => 
@@ -883,8 +912,8 @@
         public static void CanUseBedEverPostfix(ref bool __result, Pawn p, ThingDef bedDef)
         {
             if (__result)
-                __result = p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.generalSettings.validBeds?.Contains(item: bedDef.defName) ?? false) ||
-                           !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(item: bedDef.defName) ?? false);
+                __result = p.def is ThingDef_AlienRace alienProps && (alienProps.alienRace.generalSettings.validBeds?.Contains(item: bedDef) ?? false) ||
+                           !DefDatabase<ThingDef_AlienRace>.AllDefs.Any(predicate: td => td.alienRace.generalSettings.validBeds?.Contains(item: bedDef) ?? false);
         }
 
 //        public static void CanWearTogetherPostfix(ThingDef A, ThingDef b, bool __result)
@@ -967,7 +996,7 @@
         {
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
-                RelationRenamer ren = alienProps.alienRace.relationSettings.renamer?.FirstOrDefault(predicate: rn => rn.relation.EqualsIgnoreCase(B: __instance.defName));
+                RelationRenamer ren = alienProps.alienRace.relationSettings.renamer?.FirstOrDefault(predicate: rn => rn.relation == __instance);
                 if (ren != null)
                 {
                     __result = pawn.gender == Gender.Female ? ren.femaleLabel : ren.label;
@@ -1226,10 +1255,18 @@
         public static bool GainTraitPrefix(Trait trait, TraitSet __instance)
         {
             if (!(Traverse.Create(root: __instance).Field(name: "pawn").GetValue<Pawn>().def is ThingDef_AlienRace alienProps)) return true;
-            if (alienProps.alienRace.generalSettings.disallowedTraits?.Contains(item: trait.def.defName) ?? false)
-                return false;
+            AlienTraitEntry ate = alienProps.alienRace.generalSettings.disallowedTraits?.FirstOrDefault(predicate: at => at.defName == trait.def);
+            if (ate != null)
+            {
+                if (trait.Degree == ate.degree || ate.degree == 0)
+                {
+                    if (Rand.Range(0, 100) < ate.chance)
+                        return false;
+                }
+            }
+            
 
-            AlienTraitEntry ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName.EqualsIgnoreCase(B: trait.def.defName));
+            ate = alienProps.alienRace.generalSettings.forcedRaceTraitEntries?.FirstOrDefault(predicate: at => at.defName == trait.def);
             if (ate == null) return true;
 
             return Rand.Range(min: 0, max: 100) < ate.chance;
@@ -1243,7 +1280,7 @@
             ThingDef_AlienRace alienRace = GetRaceOfFaction(other.def);
             alienRace?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
                 {
-                    if (!frs.factions.Contains(item: __instance.def.defName)) return;
+                    if (!frs.factions.Contains(item: __instance.def)) return;
 
                     int           offset = frs.goodwill.RandomInRange;
 
@@ -1267,7 +1304,7 @@
 
             alienRace?.alienRace.generalSettings.factionRelations?.ForEach(action: frs =>
             {
-                if (!frs.factions.Contains(item: other.def.defName)) return;
+                if (!frs.factions.Contains(item: other.def)) return;
                 int           offset = frs.goodwill.RandomInRange;
 
                 FactionRelationKind kind = offset > 75 ?
@@ -1302,10 +1339,11 @@
             if (!(pawn.def is ThingDef_AlienRace alienProps)) return;
             bool result = true;
             alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(action: cs =>
-                {
-                    if ((cs.chemical?.EqualsIgnoreCase(B: chemical.defName) ?? false) && !cs.ingestible) result = false;
-                }
-            );
+                                                                                   {
+                                                                                       if (cs.chemical == chemical && !cs.ingestible)
+                                                                                           result = false;
+                                                                                   }
+                                                                          );
             __result = result;
         }
 
@@ -1314,7 +1352,7 @@
             if (ingester.def is ThingDef_AlienRace alienProps)
                 alienProps.alienRace.generalSettings.chemicalSettings?.ForEach(action: cs =>
                 {
-                    if (cs.chemical?.EqualsIgnoreCase(B: __instance.Props?.chemical?.defName) ?? false)
+                    if (cs.chemical == __instance.Props?.chemical)
                         cs.reactions?.ForEach(action: iod => iod.DoIngestionOutcome(pawn: ingester, ingested: __instance.parent));
                 });
         }
@@ -1365,22 +1403,18 @@
         {
             if (!__result) return;
             // ReSharper disable once ImplicitlyCapturedClosure
-            __result = ((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd =>
-                            DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd)?.giverClass == __instance.GetType()) ?? false) ||
-                       !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d =>
-                           pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd =>
-                                                 DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd)?.giverClass == __instance.GetType()) ?? false));
+            __result = ((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd.giverClass == __instance.GetType()) ?? false) ||
+                       !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d => pawn.def != d && (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd =>
+                                                 wgd.giverClass == __instance.GetType()) ?? false));
         }
 
         public static void GenericJobOnThingPostfix(WorkGiver __instance, Pawn pawn, ref Job __result)
         {
             if (__result == null) return;
             // ReSharper disable once ImplicitlyCapturedClosure
-            if (!(((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd =>
-                       DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd)?.giverClass == __instance.GetType()) ?? false) ||
-                  !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d =>
-                      pawn.def != d &&
-                      (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => DefDatabase<WorkGiverDef>.GetNamedSilentFail(defName: wgd)?.giverClass == __instance.GetType()) ?? false))))
+            if (!(((pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd.giverClass == __instance.GetType()) ?? false) ||
+                  !DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d => pawn.def != d && 
+                                                                            (d.alienRace.raceRestriction.workGiverList?.Any(predicate: wgd => wgd.giverClass == __instance.GetType()) ?? false))))
                 __result = null;
         }
 
@@ -1389,10 +1423,9 @@
             if (__instance.def is ThingDef_AlienRace alienProps && newFaction == Faction.OfPlayerSilentFail)
                 alienProps.alienRace.raceRestriction.conceptList?.ForEach(action: cdd =>
                 {
-                    ConceptDef cd = DefDatabase<ConceptDef>.GetNamedSilentFail(defName: cdd);
                     if (cdd == null) return;
-                    Find.Tutor.learningReadout.TryActivateConcept(conc: cd);
-                    PlayerKnowledgeDatabase.SetKnowledge(def: cd, value: 0);
+                    Find.Tutor.learningReadout.TryActivateConcept(conc: cdd);
+                    PlayerKnowledgeDatabase.SetKnowledge(def: cdd, value: 0);
                 });
         }
 
@@ -1401,10 +1434,9 @@
             if (__instance.def is ThingDef_AlienRace alienProps && newFaction == Faction.OfPlayerSilentFail && Current.ProgramState == ProgramState.Playing)
                 alienProps.alienRace.raceRestriction.conceptList?.ForEach(action: cdd =>
                 {
-                    ConceptDef cd = DefDatabase<ConceptDef>.GetNamedSilentFail(defName: cdd);
                     if (cdd == null) return;
-                    Find.Tutor.learningReadout.TryActivateConcept(conc: cd);
-                    PlayerKnowledgeDatabase.SetKnowledge(def: cd, value: 0);
+                    Find.Tutor.learningReadout.TryActivateConcept(conc: cdd);
+                    PlayerKnowledgeDatabase.SetKnowledge(def: cdd, value: 0);
                 });
         }
 
@@ -1523,27 +1555,27 @@
             ResearchProjectDef project = Find.ResearchManager.currentProj;
 
             ResearchProjectRestrictions rprest =
-                (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.FirstOrDefault(predicate: rpr => rpr.projects.Contains(item: project.defName));
+                (pawn.def as ThingDef_AlienRace)?.alienRace.raceRestriction.researchList?.FirstOrDefault(predicate: rpr => rpr.projects.Contains(item: project));
             if (rprest != null)
             {
-                IEnumerable<string> apparel = pawn.apparel.WornApparel.Select(selector: twc => twc.def.defName);
+                IEnumerable<ThingDef> apparel = pawn.apparel.WornApparel.Select(selector: twc => twc.def);
                 if (!rprest.apparelList?.TrueForAll(match: ap => apparel.Contains(value: ap)) ?? false)
                     __result = true;
             }
             else
             {
                 __result = DefDatabase<ThingDef_AlienRace>.AllDefsListForReading.Any(predicate: d =>
-                    pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(predicate: rpr => rpr.projects.Contains(item: project.defName)) ?? false));
+                    pawn.def != d && (d.alienRace.raceRestriction.researchList?.Any(predicate: rpr => rpr.projects.Contains(item: project)) ?? false));
             }
         }
 
-        public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ref List<ThoughtDef> __result)
+        public static void ThoughtsFromIngestingPostfix(Pawn ingester, Thing foodSource, ThingDef foodDef, ref List<ThoughtDef> __result)
         {
             if (ingester.story.traits.HasTrait(tDef: AlienDefOf.Xenophobia) && ingester.story.traits.DegreeOfTrait(tDef: AlienDefOf.Xenophobia) == 1)
-                if (__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatDirect) && foodSource.def.ingestible.sourceDef != ingester.def)
+                if (__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatDirect) && foodDef.ingestible.sourceDef != ingester.def)
                     __result.Remove(item: ThoughtDefOf.AteHumanlikeMeatDirect);
                 else if (__result.Contains(item: ThoughtDefOf.AteHumanlikeMeatAsIngredient) &&
-                         (foodSource.TryGetComp<CompIngredients>()?.ingredients.Any(predicate: td => FoodUtility.IsHumanlikeMeat(def: td) && td.ingestible.sourceDef != ingester.def) ?? false))
+                         (foodSource?.TryGetComp<CompIngredients>()?.ingredients.Any(predicate: td => FoodUtility.IsHumanlikeMeat(def: td) && td.ingestible.sourceDef != ingester.def) ?? false))
                     __result.Remove(item: ThoughtDefOf.AteHumanlikeMeatAsIngredient);
 
             if (!(ingester.def is ThingDef_AlienRace alienProps)) return;
@@ -1558,11 +1590,11 @@
                 thoughtDef = settings.ReplaceIfApplicable(def: thoughtDef);
 
                 if(thoughtDef == ThoughtDefOf.AteHumanlikeMeatDirect || thoughtDef == ThoughtDefOf.AteHumanlikeMeatDirectCannibal)
-                    thoughtDef = settings.GetAteThought(race: foodSource.def.ingestible.sourceDef, cannibal: cannibal, ingredient: false);
+                    thoughtDef = settings.GetAteThought(race: foodDef.ingestible.sourceDef, cannibal: cannibal, ingredient: false);
 
                 if (thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredient || thoughtDef == ThoughtDefOf.AteHumanlikeMeatAsIngredientCannibal)
                 {
-                    ThingDef race = foodSource.TryGetComp<CompIngredients>()?.ingredients.FirstOrDefault(td => td.ingestible?.sourceDef?.race?.Humanlike ?? false);
+                    ThingDef race = foodSource?.TryGetComp<CompIngredients>()?.ingredients.FirstOrDefault(td => td.ingestible?.sourceDef?.race?.Humanlike ?? false);
                     if(race != null)
                         thoughtDef = settings.GetAteThought(race: race, cannibal: cannibal, ingredient: true);
                 }
@@ -1747,10 +1779,9 @@
 
             ThoughtDef thought = !(butcher.def is ThingDef_AlienRace alienPropsButcher) ?
                                      ThoughtDefOf.ButcheredHumanlikeCorpse :
-                                     DefDatabase<ThoughtDef>.GetNamedSilentFail(
-                                         defName: alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific
-                                                    ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(item: corpse.def.defName) ?? false)?.thought ??
-                                                  alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought);
+                                     alienPropsButcher.alienRace.thoughtSettings.butcherThoughtSpecific
+                                                    ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(item: corpse.def) ?? false)?.thought ??
+                                                  alienPropsButcher.alienRace.thoughtSettings.butcherThoughtGeneral.thought;
 
             butcher.needs?.mood?.thoughts?.memories?.TryGainMemory(def: thought ?? ThoughtDefOf.ButcheredHumanlikeCorpse);
 
@@ -1759,10 +1790,9 @@
                 if (p == butcher || p.needs?.mood?.thoughts == null) return;
                 thought = !(p.def is ThingDef_AlienRace alienPropsPawn) ?
                               ThoughtDefOf.KnowButcheredHumanlikeCorpse :
-                              DefDatabase<ThoughtDef>.GetNamedSilentFail(
-                                  defName: alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific
-                                             ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(item: corpse.def.defName) ?? false)?.knowThought ??
-                                           alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought);
+                              alienPropsPawn.alienRace.thoughtSettings.butcherThoughtSpecific
+                                             ?.FirstOrDefault(predicate: bt => bt.raceList?.Contains(item: corpse.def) ?? false)?.knowThought ??
+                                           alienPropsPawn.alienRace.thoughtSettings.butcherThoughtGeneral.knowThought;
 
                 p.needs.mood.thoughts.memories.TryGainMemory(def: thought ?? ThoughtDefOf.KnowButcheredHumanlikeCorpse);
             });
@@ -1803,8 +1833,8 @@
 
             def = alienProps.alienRace.thoughtSettings.ReplaceIfApplicable(def);
 
-            if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def.defName) ?? false)) ||
-                (alienProps.alienRace.thoughtSettings.cannotReceiveThoughts?.Contains(item: def.defName) ?? false))
+            if ((alienProps.alienRace.thoughtSettings.cannotReceiveThoughtsAtAll && !(alienProps.alienRace.thoughtSettings.canStillReceiveThoughts?.Contains(item: def) ?? false)) ||
+                (alienProps.alienRace.thoughtSettings.cannotReceiveThoughts?.Contains(item: def) ?? false))
                 __result = false;
         }
 
@@ -1857,26 +1887,8 @@
             if (pawn.def is ThingDef_AlienRace alienProps)
             {
                 //Log.Message(pawn.LabelCap);
-                if (alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen != null)
-                    pawn.story.hairColor = alienProps.alienRace.generalSettings.alienPartGenerator.alienhaircolorgen.NewRandomizedColor();
 
-                AlienPartGenerator.AlienComp alienComp = pawn.GetComp<AlienPartGenerator.AlienComp>();
-                alienComp.hairColorSecond = alienProps.alienRace.generalSettings.alienPartGenerator.alienhairsecondcolorgen?.NewRandomizedColor() ?? pawn.story.hairColor;
-
-                if (alienProps.alienRace.hairSettings.getsGreyAt <= pawn.ageTracker.AgeBiologicalYears)
-                {
-                    if(Rand.Value < GenMath.SmootherStep(alienProps.alienRace.hairSettings.getsGreyAt, pawn.RaceProps.ageGenerationCurve.Points.Count < 3 ? alienProps.alienRace.hairSettings.getsGreyAt + 35 : pawn.RaceProps.ageGenerationCurve.Points.Skip(pawn.RaceProps.ageGenerationCurve.Points.Count-3).First().x, pawn.ageTracker.AgeBiologicalYears))
-                    {
-                        float grey = Rand.Range(min: 0.65f, max: 0.85f);
-                        pawn.story.hairColor = new Color(r: grey, g: grey, b: grey);
-                    }
-                }
-
-                if (alienProps.alienRace.generalSettings.alienPartGenerator.useSkincolorForHair)
-                {
-                    pawn.story.hairColor      = pawn.story.SkinColor;
-                    alienComp.hairColorSecond = alienComp.skinColorSecond;
-                }
+                pawn.story.hairColor = pawn.GetComp<AlienPartGenerator.AlienComp>().GetChannel("hair").first;
 
                 string headPath = alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: pawn.ageTracker.CurLifeStage).head;
 
@@ -2023,6 +2035,9 @@
             if (alien.def is ThingDef_AlienRace alienProps)
             {
                 AlienPartGenerator.AlienComp alienComp = __instance.pawn.GetComp<AlienPartGenerator.AlienComp>();
+
+                AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
+
                 if (alienComp.fixGenderPostSpawn)
                 {
                     float? maleGenderProbability = alien.kindDef.GetModExtension<Info>()?.maleGenderProbability ?? alienProps.alienRace.generalSettings.maleGenderProbability;
@@ -2033,8 +2048,7 @@
                     Traverse.Create(root: __instance.pawn.story).Field(name: "headGraphicPath").SetValue(
                         value: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: alien.ageTracker.CurLifeStage).head.NullOrEmpty() ?
                                    "" :
-                                   alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
-                                       userpath: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: alien.ageTracker.CurLifeStage).head, pawn: __instance.pawn));
+                                   apg.RandomAlienHead(userpath: alienProps.alienRace.graphicPaths.GetCurrentGraphicPath(lifeStageDef: alien.ageTracker.CurLifeStage).head, pawn: __instance.pawn));
 
                     alienComp.fixGenderPostSpawn = false;
                 }
@@ -2049,28 +2063,28 @@
                 alienComp.AssignProperMeshs();
 
                 Traverse.Create(root: alien.story).Field(name: "headGraphicPath").SetValue(value: alienComp.crownType.NullOrEmpty() ?
-                                                                                                      alienProps.alienRace.generalSettings.alienPartGenerator.RandomAlienHead(
-                                                                                                          userpath: graphicPaths.head, pawn: alien) :
+                                                                                                      apg.RandomAlienHead(
+                                                                                                                                                        userpath: graphicPaths.head, pawn: alien) :
                                                                                                       AlienPartGenerator.GetAlienHead(userpath: graphicPaths.head,
-                                                                                                          gender: alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedHeads ?
+                                                                                                          gender: apg.useGenderedHeads ?
                                                                                                                       alien.gender.ToString() :
                                                                                                                       "", crowntype: alienComp.crownType));
 
                 __instance.nakedGraphic = !graphicPaths.body.NullOrEmpty() ?
-                                              alienProps.alienRace.generalSettings.alienPartGenerator.GetNakedGraphic(bodyType: alien.story.bodyType,
-                                                  shader: ContentFinder<Texture2D>.Get(
-                                                              itemPath: AlienPartGenerator.GetNakedPath(bodyType: alien.story.bodyType, userpath: graphicPaths.body,
-                                                                            gender: alienProps.alienRace.generalSettings.alienPartGenerator.useGenderedBodies ? alien.gender.ToString() : "") +
-                                                                        "_northm", reportFailure: false) == null ?
-                                                              graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
-                                                              ShaderDatabase.CutoutComplex, skinColor: __instance.pawn.story.SkinColor,
-                                                  skinColorSecond: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false), userpath: graphicPaths.body,
-                                                  gender: alien.gender.ToString()) :
+                                              apg.GetNakedGraphic(bodyType: alien.story.bodyType,
+                                                                                                shader: ContentFinder<Texture2D>.Get(
+                                                                                                                                     itemPath: AlienPartGenerator.GetNakedPath(bodyType: alien.story.bodyType, userpath: graphicPaths.body,
+                                                                                                                                                                               gender: apg.useGenderedBodies ? alien.gender.ToString() : "") +
+                                                                                                                                               "_northm", reportFailure: false) == null ?
+                                                                                                            graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
+                                                                                                            ShaderDatabase.CutoutComplex, skinColor: __instance.pawn.story.SkinColor,
+                                                                                                skinColorSecond: apg.SkinColor(alien: alien, first: false), userpath: graphicPaths.body,
+                                                                                                gender: alien.gender.ToString()) :
                                               null;
                 __instance.rottingGraphic = !graphicPaths.body.NullOrEmpty() ?
-                                                alienProps.alienRace.generalSettings.alienPartGenerator.GetNakedGraphic(bodyType: alien.story.bodyType, shader: graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout,
-                                                    skinColor: PawnGraphicSet.RottingColor, skinColorSecond: PawnGraphicSet.RottingColor, userpath: graphicPaths.body,
-                                                    gender: alien.gender.ToString()) :
+                                                apg.GetNakedGraphic(bodyType: alien.story.bodyType, shader: graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout,
+                                                                                                  skinColor: PawnGraphicSet.RottingColor, skinColorSecond: PawnGraphicSet.RottingColor, userpath: graphicPaths.body,
+                                                                                                  gender: alien.gender.ToString()) :
                                                 null;
                 __instance.dessicatedGraphic = !graphicPaths.skeleton.NullOrEmpty() ? GraphicDatabase.Get<Graphic_Multi>(path:(graphicPaths.skeleton == GraphicPaths.VANILLA_SKELETON_PATH ? alien.story.bodyType.bodyDessicatedGraphicPath : graphicPaths.skeleton), shader: ShaderDatabase.Cutout) : null;
                 __instance.headGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
@@ -2078,7 +2092,7 @@
                                                  shader: ContentFinder<Texture2D>.Get(itemPath: alien.story.HeadGraphicPath + "_northm", reportFailure: false) == null ?
                                                              graphicPaths.skinShader?.Shader ?? ShaderDatabase.Cutout :
                                                              ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.SkinColor,
-                                                 colorTwo: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false)) :
+                                                 colorTwo: apg.SkinColor(alien: alien, first: false)) :
                                              null;
                 __instance.desiccatedHeadGraphic = alien.health.hediffSet.HasHead && !alien.story.HeadGraphicPath.NullOrEmpty() ?
                                                        GraphicDatabase.Get<Graphic_Multi>(path: alien.story.HeadGraphicPath, shader: ShaderDatabase.Cutout, drawSize: Vector2.one,
@@ -2090,11 +2104,11 @@
                 __instance.hairGraphic = GraphicDatabase.Get<Graphic_Multi>(path: __instance.pawn.story.hairDef.texPath,
                     shader: ContentFinder<Texture2D>.Get(itemPath: __instance.pawn.story.hairDef.texPath + "_northm", reportFailure: false) == null ?
                                 (alienProps.alienRace.hairSettings.shader?.Shader ?? ShaderDatabase.Cutout) :
-                                ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.hairColor, colorTwo: alienComp.hairColorSecond);
+                                ShaderDatabase.CutoutComplex, drawSize: Vector2.one, color: alien.story.hairColor, colorTwo: alienComp.GetChannel("hair").second);
                 __instance.headStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                   GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.stump,
-                                                      shader: alienComp.skinColor == alienComp.skinColorSecond ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, drawSize: Vector2.one,
-                                                      color: alien.story.SkinColor, colorTwo: alienProps.alienRace.generalSettings.alienPartGenerator.SkinColor(alien: alien, first: false)) :
+                                                      shader: alien.story.SkinColor == apg.SkinColor(alien, false) ? ShaderDatabase.Cutout : ShaderDatabase.CutoutComplex, drawSize: Vector2.one,
+                                                      color: alien.story.SkinColor, colorTwo: apg.SkinColor(alien: alien, first: false)) :
                                                   null;
                 __instance.desiccatedHeadStumpGraphic = !graphicPaths.stump.NullOrEmpty() ?
                                                             GraphicDatabase.Get<Graphic_Multi>(path: graphicPaths.stump,
@@ -2102,7 +2116,8 @@
                                                                 color: PawnGraphicSet.RottingColor) :
                                                             null;
 
-                AlienPartGenerator apg = alienProps.alienRace.generalSettings.alienPartGenerator;
+                alienComp.ColorChannels["hair"].first = alien.story.hairColor;
+
                 alienComp.addonGraphics = new List<Graphic>();
                 if (alienComp.addonVariants == null)
                     alienComp.addonVariants = new List<int>();
@@ -2116,11 +2131,6 @@
                         alienComp.addonVariants.Add(item: sharedIndex);
                 }
 
-                alienComp.ColorChannels["skin"].first = alienComp.skinColor;
-                alienComp.ColorChannels["skin"].second = alienComp.skinColorSecond;
-
-                alienComp.ColorChannels["hair"].first  = alien.story.hairColor;
-                alienComp.ColorChannels["hair"].second = alienComp.hairColorSecond;
                 __instance.ResolveApparelGraphics();
 
                 PortraitsCache.SetDirty(alien);
@@ -2131,23 +2141,20 @@
             return true;
         }
 
-        public static void GenerateTraitsPrefix(Pawn pawn, PawnGenerationRequest request)
+        public static void GenerateTraitsPostfix(Pawn pawn, PawnGenerationRequest request)
         {
-            if (!request.Newborn && request.CanGeneratePawnRelations &&
-                pawn.story.AllBackstories.Any(predicate: bs => DefDatabase<BackstoryDef>.GetNamedSilentFail(defName: bs.identifier)?.relationSettings != null))
-            {
-                pawn.relations.ClearAllRelations();
-                AccessTools.Method(type: typeof(PawnGenerator), name: "GeneratePawnRelations").Invoke(obj: null, parameters: new object[] {pawn, request});
-            }
+            if (!request.Newborn && request.CanGeneratePawnRelations)
+                AccessTools.Method(typeof(PawnGenerator), "GeneratePawnRelations").Invoke(null, new object[] {pawn, request});
+
             if (pawn.def is ThingDef_AlienRace alienProps && !alienProps.alienRace.generalSettings.forcedRaceTraitEntries.NullOrEmpty())
                 alienProps.alienRace.generalSettings.forcedRaceTraitEntries.ForEach(action: ate =>
                 {
-                    if ((pawn.story.traits.allTraits.Count >= 4 || pawn.gender != Gender.Male ||
+                    if ((pawn.gender != Gender.Male ||
                          !(Math.Abs(value: ate.commonalityMale - -1f) < 0.001f) && !(Rand.Range(min: 0, max: 100) < ate.commonalityMale))                           &&
                         (pawn.gender != Gender.Female || Math.Abs(value: ate.commonalityFemale - -1f) > 0.001f && !(Rand.Range(min: 0, max: 100) < ate.commonalityFemale)) &&
                         pawn.gender != Gender.None) return;
-                    if (!pawn.story.traits.allTraits.Any(predicate: tr => tr.def.defName.EqualsIgnoreCase(B: ate.defName)))
-                        pawn.story.traits.GainTrait(trait: new Trait(def: TraitDef.Named(defName: ate.defName), degree: ate.degree, forced: true));
+                    if (!pawn.story.traits.allTraits.Any(predicate: tr => tr.def == ate.defName))
+                        pawn.story.traits.GainTrait(trait: new Trait(def: ate.defName, degree: ate.degree, forced: true));
                 });
         }
 
@@ -2198,7 +2205,7 @@
             {
                 IEnumerable<RaceSettings> settings = DefDatabase<RaceSettings>.AllDefsListForReading;
                 PawnKindEntry                   pk;
-                if (request.KindDef == PawnKindDefOf.SpaceRefugee)
+                if (request.KindDef == PawnKindDefOf.SpaceRefugee || request.KindDef == PawnKindDefOf.Refugee)
                 {
                     if (settings.Where(predicate: r => !r.pawnKindSettings.alienrefugeekinds.NullOrEmpty()).Select(selector: r => r.pawnKindSettings.alienrefugeekinds.RandomElement())
                        .TryRandomElementByWeight(weightSelector: pke => pke.chance, result: out pk))
